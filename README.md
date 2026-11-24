@@ -36,8 +36,7 @@ npm run dev
 
 开发地址为 `http://localhost:5173/`。
 
-## 工程入口
+## 工程文档
 
-- [验证记录](docs/verification.md)记录后端覆盖及验证边界。
-- [业务学习导航](docs/learning/00-学习导航.md)按完整链路整理源码入口。
+- [部署说明](deploy/README.md)包含服务启动和配置。
 - [数据库初始化说明](database/README.md)记录迁移和演示数据的位置。

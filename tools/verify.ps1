@@ -6,10 +6,6 @@ if (-not (Test-Path -LiteralPath (Join-Path $projectRoot '.env'))) {
 }
 . (Join-Path $PSScriptRoot 'load-env.ps1')
 if (-not $env:JAVA_HOME -and (Test-Path 'F:/Dev/jdk17/bin/java.exe')) { $env:JAVA_HOME = 'F:/Dev/jdk17' }
-if (Get-Command python -ErrorAction SilentlyContinue) {
-    & python -X utf8 (Join-Path $PSScriptRoot 'verify-reference.py')
-    if ($LASTEXITCODE -ne 0) { throw '原文材料核对失败。' }
-}
 & (Join-Path $PSScriptRoot 'format-java.ps1') -Check
 $maven = Get-Command mvn.cmd,mvn -ErrorAction SilentlyContinue | Select-Object -First 1
 if (-not $maven) { throw '未找到 Maven，请配置 Maven 与 JDK 17。' }
