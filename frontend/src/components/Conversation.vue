@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
 import { ArrowLeft, ArrowUp, BellRing, Bot, Gift, MessageCircle, RefreshCw, TextQuote, UsersRound } from '@lucide/vue'
-import { currentUser, id, localDate, parseWire } from '../api'
+import { api, currentUser, encode, id, localDate, parseWire } from '../api'
 
 const props = defineProps({ chat:Object, assistant:Boolean })
 const emit = defineEmits(['back','members','packet','packetDetails','createReminder'])
@@ -10,8 +10,30 @@ const draft = ref('')
 const reference = ref('')
 const scroll = ref(null)
 const composer = ref(null)
+const memberNames = ref(new Map())
 const title = computed(() => showingReminders.value ? '提醒' : props.assistant ? 'AI 助手' : session.value?.name || '消息')
 const ready = computed(() => props.assistant ? session.value?.type === 2 : session.value && session.value.type !== 2)
+
+watch(() => session.value?.type === 1 ? session.value.sessionId : '', async (room, previous, onCleanup) => {
+  memberNames.value = new Map()
+  if (!room) return
+  let active = true
+  onCleanup(() => { active = false })
+  try {
+    let page = 1
+    let members
+    do {
+      members = await api('/api/group/' + encode(room) + '/members?pageNum=' + page + '&pageSize=100')
+      if (!active) return
+      for (const member of members.list || []) {
+        if (member.nickname) memberNames.value.set(id(member.userId), member.nickname)
+      }
+      page++
+    } while (members.hasNext)
+  } catch {
+    // Message history is still usable while member details are unavailable.
+  }
+}, { immediate:true })
 
 async function toBottom() {
   await nextTick()
@@ -28,6 +50,21 @@ async function loadOlder() {
   if (pane) pane.scrollTop = previous + pane.scrollHeight - height
 }
 function mine(message) { return id(message.senderId) === currentUser() }
+function senderName(message) {
+  if (message.reminder) return '提醒'
+  if (mine(message)) return '我'
+  if (message.nickname) return message.nickname
+  if (props.assistant) return '轻聊助手'
+  if (session.value?.type === 1) return memberNames.value.get(id(message.senderId)) || '群成员'
+  return session.value?.name || '会话成员'
+}
+function assistantText(text) {
+  return typeof text === 'string' ? text.replace(/(?<!\\)\\(?:r\\n|n)/g, '\n') : text
+}
+function messageText(message) {
+  const text = message.body?.content ?? message.content ?? '消息内容不可用'
+  return props.assistant && !mine(message) ? assistantText(text) : text
+}
 function send() {
   if (ready.value && props.chat.send(draft.value,reference.value)) {
     draft.value = ''
@@ -85,22 +122,22 @@ defineExpose({ reminderDraft })
       </div>
       <article v-for="message in thread" :key="message.messageId" class="thread-message" :class="{ mine:mine(message) }">
         <span v-if="!mine(message)" class="message-avatar">
-          <BellRing v-if="message.reminder" :size="15"/><Bot v-else-if="assistant" :size="15"/><span v-else>{{ (message.nickname || session?.name || '聊').slice(0,1) }}</span>
+          <BellRing v-if="message.reminder" :size="15"/><Bot v-else-if="assistant" :size="15"/><span v-else>{{ senderName(message).slice(0,1) }}</span>
         </span>
         <div class="message-content">
-          <header>{{ message.reminder ? '提醒' : mine(message) ? '我' : message.nickname || (assistant ? '轻聊助手' : session?.name || '会话成员') }}
+          <header>{{ senderName(message) }}
             <time>{{ message.warning || localDate(message.createdTime) }}</time>
           </header>
           <button v-if="Number(message.type) === 3" class="packet-bubble" :disabled="!packet(message)?.redPacketId" @click="openPacket(message)">
             <Gift :size="19"/><span>{{ packet(message)?.redPacketWrapperText || '红包' }}<small>查看红包</small></span>
           </button>
-          <div v-else class="bubble">{{ message.body?.content ?? message.content ?? '消息内容不可用' }}</div>
+          <div v-else class="bubble">{{ messageText(message) }}</div>
         </div>
       </article>
     </div>
     <section v-if="summary" class="summary-box">
       <header><strong>过去 24 小时的会话总结</strong><button class="quiet" @click="summary=''">收起</button></header>
-      <p>{{ summary }}</p>
+      <p>{{ assistantText(summary) }}</p>
     </section>
     <div v-if="ready" class="composer-area">
       <form class="composer" @submit.prevent="send">

@@ -105,8 +105,8 @@ onMounted(async () => {
               <span v-if="unread.get(room.sessionId)" class="unread">{{ Math.min(99,unread.get(room.sessionId)) }}</span>
             </button>
             <p v-if="!visible.length && query.trim()" class="list-empty muted">没有找到匹配的会话。</p>
-            <button v-if="!query.trim() || '提醒'.includes(query.trim())" class="reminders-link" :aria-current="selected===reminderKey" @click="open(reminderKey)">
-              <span class="avatar bell"><BellRing :size="18"/></span><span class="session-title"><strong>提醒</strong><small>查看到期提醒</small></span>
+            <button v-if="!query.trim() || ['系统消息','提醒'].some(label=>label.includes(query.trim()))" class="reminders-link" :aria-current="selected===reminderKey" @click="open(reminderKey)">
+              <span class="avatar bell"><BellRing :size="18"/></span><span class="session-title"><strong>系统消息</strong><small>查看到期提醒</small></span>
               <span v-if="unread.get(reminderKey)" class="unread">{{ Math.min(99,unread.get(reminderKey)) }}</span>
             </button>
           </nav>

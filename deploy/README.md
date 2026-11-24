@@ -26,7 +26,7 @@ docker compose --env-file .env -f deploy/compose.yml ps
 
 MySQL 新卷首次启动会按顺序执行生成目录内 01 建表、02 升级、03 演示数据、04 扩展演示数据、04 Canal 用户、05 Nacos 表和 06 Nacos 用户脚本。已有数据卷不会重放初始化；需通过数据库客户端手动执行 [升级脚本](../database/02-business-upgrade.sql)。不需要删除数据卷重建。红包服务启动时检查领取唯一索引，缺少时拒绝启动。
 
-演示账号 `demo-a@example.com`、`demo-b@example.com`，密码均为 `123456`；用户 ID 1001、2002，单聊会话 99001。各有 100000 分测试余额；机器人会话 99002 只属于 A。演示数据脚本不重置已有余额。
+演示账号 `demo-a@example.com`、`demo-b@example.com` 和 `demo-c@example.com`，密码均为 `123456`；用户 ID 1001、2002、3003，A 和 B 有预置单聊。各有 100000 分测试余额；机器人会话 99002 只属于 A。演示数据脚本不重置已有余额。
 
 MinIO 9000 为对象接口，9001 为控制台。用户服务启用初始化时创建 `infinitechat` 桶，仅公开 `users/` 头像对象的读取；PUT 仍需短期签名。容器内初始化地址为 `http://minio:9000`，返回给本机客户端的签名使用 `http://localhost:9000`，二者不能混用。CORS 允许本机 5173、10010，配置依据 [MinIO 源码](https://github.com/minio/minio/blob/master/internal/config/api/api.go)。
 

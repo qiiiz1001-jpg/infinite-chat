@@ -12,6 +12,8 @@ const kind=ref('')
 const selected=ref(null)
 const users=ref([])
 const choices=ref([])
+const groupName=ref('')
+const minChoices=computed(()=>kind.value==='create'?2:1)
 const packetId=ref('')
 const packetView=ref(null)
 const ownPacket=ref(false)
@@ -34,6 +36,7 @@ async function loadPeople(path, version) {
 }
 const friendPath = () => '/api/contact/'+encode(currentUser())+'/friend?pageNum=1&pageSize=100'
 function group() {
+  groupName.value=''
   show('create')
   const version=++view
   run(()=>loadPeople(friendPath(),version))
@@ -69,9 +72,9 @@ function packetDetails(target,mine) {
 defineExpose({group,members,packet,packetDetails})
 function finishGroup() {
   return run(async()=>{
-    if(!choices.value.length)throw Error('至少选择一位好友。')
+    if(choices.value.length<minChoices.value)throw Error(kind.value==='create'?'至少选择两位好友。':'至少选择一位好友。')
     if(kind.value==='create'){
-      const result=await post('/api/group',{creatorId:currentUser(),memberIds:choices.value})
+      const result=await post('/api/group',{creatorId:currentUser(),memberIds:choices.value,name:groupName.value.trim()})
       modal.value.close()
       emit('roomsChanged',result.sessionId)
       emit('status',result.failedMemberIds?.length?'群已创建，部分成员未能加入。':'群聊已创建。')
@@ -118,13 +121,14 @@ function claim() {
 <template>
   <ModalPanel ref="modal" :title="displayTitle">
     <form v-if="kind==='create'||kind==='invite'" class="form-stack" @submit.prevent="finishGroup">
-      <fieldset><legend>选择好友</legend>
+      <label v-if="kind==='create'">群名称<input v-model="groupName" maxlength="32" placeholder="选填"></label>
+      <fieldset><legend>{{ kind==='create'?'至少选择两位好友':'选择好友' }}</legend>
         <p v-if="!users.length" class="muted">{{ busy ? '正在读取好友…' : '请先在联系人中添加好友。' }}</p>
         <label v-for="person in users" :key="person.userId" class="check-row">
           <input v-model="choices" type="checkbox" :value="id(person.userId)"> {{ person.nickname || '好友' }}
         </label>
       </fieldset>
-      <button class="primary" :disabled="busy || !choices.length">{{ kind==='create'?'创建群聊':'发送邀请' }}</button>
+      <button class="primary" :disabled="busy || choices.length<minChoices">{{ kind==='create'?'创建群聊':'发送邀请' }}</button>
     </form>
     <template v-else-if="kind==='members'">
       <div v-for="person in users" :key="person.userId" class="data-row">

@@ -64,7 +64,9 @@ public class GroupServiceImpl implements GroupService {
         activeUser(creator);
         List<Long> failed = new ArrayList<>();
         List<Long> valid = eligibleFriends(creator, request.getMemberIds(), failed);
-        if (valid.isEmpty()) throw new BusinessException(ErrorCode.OPERATION_ERROR, "没有有效的好友可加入群聊");
+        if (valid.size() < 2) throw new BusinessException(ErrorCode.PARAMS_ERROR, "新建群聊至少需要两位有效好友");
+        String name = Objects.toString(request.getName(), "").strip();
+        if (name.length() > 32) throw new BusinessException(ErrorCode.PARAMS_ERROR, "群名称最多 32 个字符");
         List<Long> all = new ArrayList<>();
         all.add(creator);
         all.addAll(valid);
@@ -72,7 +74,7 @@ public class GroupServiceImpl implements GroupService {
         session.setSessionId(SnowflakeUtil.nextId());
         session.setType(1);
         session.setStatus(0);
-        session.setName(generateGroupName(all));
+        session.setName(name.isEmpty() ? generateGroupName(all) : name);
         session.setAvatar(DEFAULT_GROUP_AVATAR_URL);
         session.setCreatedTime(new Date());
         session.setUpdatedTime(new Date());

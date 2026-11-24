@@ -12,7 +12,7 @@ MySQL 8.0 按顺序执行：
 
 1. [01-init.sql](01-init.sql)：初始化业务表，包含 session.avatar 和 red_packet.session_type。
 2. [02-business-upgrade.sql](02-business-upgrade.sql)：旧库补这两列、回填缺失值，增加领取唯一约束、毫秒消息时间与系统通知表；可重复执行。
-3. [03-demo-data.sql](03-demo-data.sql)：两个演示账号、单聊、机器人与测试余额；不重置已有记录。
+3. [03-demo-data.sql](03-demo-data.sql)：三个演示账号、单聊、机器人与测试余额；不重置已有记录。
 4. [04-course-examples.sql](04-course-examples.sql)：可选的扩展演示数据，包含用户、好友、单聊和群聊。
 5. [05-agent-actions.sql](05-agent-actions.sql)：创建 Agent 消息草稿、一次性提醒与投递记录表。先选中 `.env` 的 DB_NAME 对应业务库再执行，SQL 本身不含 USE，CREATE IF NOT EXISTS 不删除已有表。
 

@@ -241,13 +241,15 @@ class UserServiceSmokeTest {
 
     @Test
     void passwordLoginCreatesGroupAndOwnerCanRemoveMember() throws Exception {
+        seedGroupFriend();
         String token = login("a@example.com");
-        JsonNode created = post("/api/group", "{\"creatorId\":1001,\"memberIds\":[2002]}", token);
+        JsonNode created =
+                post("/api/group", "{\"creatorId\":1001,\"memberIds\":[2002,4004]}", token);
         assertEquals(200, created.path("code").asInt());
         String session = created.path("data").path("sessionId").asText();
         assertTrue(created.path("data").path("sessionId").isTextual(), "雪花 ID 应按字符串传输");
         assertEquals(
-                2,
+                3,
                 jdbc.queryForObject(
                         "SELECT COUNT(*) FROM user_session WHERE session_id=?",
                         Integer.class,
@@ -261,7 +263,7 @@ class UserServiceSmokeTest {
                         token);
         assertEquals(200, kicked.path("code").asInt());
         assertEquals(
-                1,
+                2,
                 jdbc.queryForObject(
                         "SELECT COUNT(*) FROM user_session WHERE session_id=?",
                         Integer.class,
@@ -270,9 +272,10 @@ class UserServiceSmokeTest {
 
     @Test
     void memberCannotSpoofOwnerOrKickOwner() throws Exception {
+        seedGroupFriend();
         String owner = login("a@example.com");
         String session =
-                post("/api/group", "{\"creatorId\":1001,\"memberIds\":[2002]}", owner)
+                post("/api/group", "{\"creatorId\":1001,\"memberIds\":[2002,4004]}", owner)
                         .path("data")
                         .path("sessionId")
                         .asText();
@@ -294,7 +297,7 @@ class UserServiceSmokeTest {
                         member);
         assertEquals(40300, denied.path("code").asInt());
         assertEquals(
-                2,
+                3,
                 jdbc.queryForObject(
                         "SELECT COUNT(*) FROM user_session WHERE session_id=?",
                         Integer.class,
@@ -303,13 +306,17 @@ class UserServiceSmokeTest {
 
     @Test
     void createGroupReturnsOriginalFieldsAndNotificationContract() throws Exception {
+        seedGroupFriend();
         seedUser(3003, "c@example.com", "C");
         String token = login("a@example.com");
         JsonNode result =
-                post("/api/group", "{\"creatorId\":1001,\"memberIds\":[2002,3003,2002]}", token);
+                post(
+                        "/api/group",
+                        "{\"creatorId\":1001,\"memberIds\":[2002,3003,4004,2002]}",
+                        token);
         assertEquals(200, result.path("code").asInt());
         JsonNode group = result.path("data");
-        assertEquals("A、B", group.path("sessionName").asText());
+        assertEquals("A、B、D", group.path("sessionName").asText());
         assertEquals(1, group.path("sessionType").asInt());
         assertEquals("/assets/group-avatar.png", group.path("avatar").asText());
         assertEquals(3003, group.path("failedMemberIds").get(0).asLong());
@@ -321,7 +328,7 @@ class UserServiceSmokeTest {
                         .orElseThrow();
         assertTrue(event.has("senderId") && event.get("senderId").isNull());
         assertEquals(1001, event.path("body").path("creatorId").asLong());
-        assertEquals(2, event.path("body").path("membersCount").asInt());
+        assertEquals(3, event.path("body").path("membersCount").asInt());
         assertEquals(group.path("avatar").asText(), event.path("body").path("avatar").asText());
         assertEquals(
                 group.path("avatar").asText(),
@@ -333,18 +340,21 @@ class UserServiceSmokeTest {
 
     @Test
     void originalGroupNameIsTruncatedToSixteenCharacters() throws Exception {
+        seedGroupFriend();
         jdbc.update("UPDATE user SET nickname='abcdefghijklmnopqrst' WHERE user_id=1001");
-        JsonNode created = post("/api/group", "{\"memberIds\":[2002]}", login("a@example.com"));
+        JsonNode created =
+                post("/api/group", "{\"memberIds\":[2002,4004]}", login("a@example.com"));
         assertEquals("abcdefghijklmnop", created.path("data").path("sessionName").asText());
     }
 
     @Test
     void inviteKickAndExitKeepOriginalNotificationBodies() throws Exception {
+        seedGroupFriend();
         seedUser(3003, "c@example.com", "C");
         jdbc.update("INSERT INTO friend(user_id,friend_id,status) VALUES(1001,3003,0)");
         String owner = login("a@example.com");
         String session =
-                post("/api/group", "{\"memberIds\":[2002]}", owner)
+                post("/api/group", "{\"memberIds\":[2002,4004]}", owner)
                         .path("data")
                         .path("sessionId")
                         .asText();
@@ -364,7 +374,7 @@ class UserServiceSmokeTest {
                                                 && e.path("receiverId").asLong() == 3003)
                         .findFirst()
                         .orElseThrow();
-        assertEquals(3, invitation.path("body").path("membersCount").asInt());
+        assertEquals(4, invitation.path("body").path("membersCount").asInt());
         assertEquals(1001, invitation.path("body").path("creatorId").asLong());
         assertFalse(invitation.path("body").path("avatar").asText().isBlank());
         post(
@@ -398,14 +408,15 @@ class UserServiceSmokeTest {
 
     @Test
     void groupPaginationUsesJoinTimeAndReturnsCompleteMetadata() throws Exception {
+        seedGroupFriend();
         String owner = login("a@example.com");
         String first =
-                post("/api/group", "{\"memberIds\":[2002]}", owner)
+                post("/api/group", "{\"memberIds\":[2002,4004]}", owner)
                         .path("data")
                         .path("sessionId")
                         .asText();
         String second =
-                post("/api/group", "{\"memberIds\":[2002]}", owner)
+                post("/api/group", "{\"memberIds\":[2002,4004]}", owner)
                         .path("data")
                         .path("sessionId")
                         .asText();
@@ -419,8 +430,8 @@ class UserServiceSmokeTest {
                 Long.valueOf(second));
         JsonNode page = get("/api/group/user/1001?pageNum=1&pageSize=1", owner).path("data");
         assertEquals(first, page.path("list").get(0).path("sessionId").asText());
-        assertEquals("A、B", page.path("list").get(0).path("name").asText());
-        assertEquals(2, page.path("list").get(0).path("memberCount").asInt());
+        assertEquals("A、B、D", page.path("list").get(0).path("name").asText());
+        assertEquals(3, page.path("list").get(0).path("memberCount").asInt());
         assertEquals("2030-01-03 00:00:00", page.path("list").get(0).path("createdTime").asText());
         assertEquals(2, page.path("total").asInt());
         assertEquals(1, page.path("pageNum").asInt());
@@ -431,9 +442,9 @@ class UserServiceSmokeTest {
         JsonNode memberPage =
                 get("/api/group/" + first + "/members?pageNum=2&pageSize=1", owner).path("data");
         assertEquals(2, memberPage.path("pageNum").asInt());
-        assertEquals(2, memberPage.path("pages").asInt());
+        assertEquals(3, memberPage.path("pages").asInt());
         assertTrue(memberPage.path("hasPrevious").asBoolean());
-        assertFalse(memberPage.path("hasNext").asBoolean());
+        assertTrue(memberPage.path("hasNext").asBoolean());
         seedUser(3003, "c@example.com", "C");
         JsonNode empty =
                 get("/api/group/user/3003?pageNum=1&pageSize=10", login("c@example.com"))
@@ -445,19 +456,43 @@ class UserServiceSmokeTest {
 
     @Test
     void committedGroupReportsNotificationFailureWithoutRollingBackMembership() throws Exception {
+        seedGroupFriend();
         when(kafka.send(eq("system-notification-topic"), eq("2002"), anyString()))
                 .thenReturn(
                         CompletableFuture.failedFuture(
                                 new IllegalStateException("test send failure")));
-        JsonNode response = post("/api/group", "{\"memberIds\":[2002]}", login("a@example.com"));
+        JsonNode response =
+                post("/api/group", "{\"memberIds\":[2002,4004]}", login("a@example.com"));
         assertEquals(200, response.path("code").asInt());
         assertEquals(2002, response.path("data").path("failedMemberIds").get(0).asLong());
         assertEquals(
-                2,
+                3,
                 jdbc.queryForObject(
                         "SELECT COUNT(*) FROM user_session WHERE session_id=?",
                         Integer.class,
                         response.path("data").path("sessionId").asLong()));
+    }
+
+    @Test
+    void groupCreationRequiresTwoDistinctValidFriends() throws Exception {
+        String owner = login("a@example.com");
+        JsonNode single = post("/api/group", "{\"memberIds\":[2002]}", owner);
+        JsonNode duplicate = post("/api/group", "{\"memberIds\":[2002,2002]}", owner);
+        assertEquals(40000, single.path("code").asInt());
+        assertEquals(40000, duplicate.path("code").asInt());
+        assertEquals(
+                0, jdbc.queryForObject("SELECT COUNT(*) FROM session WHERE type=1", Integer.class));
+        seedGroupFriend();
+        JsonNode named =
+                post("/api/group", "{\"name\":\"产品评审小组\",\"memberIds\":[2002,4004]}", owner);
+        assertEquals(200, named.path("code").asInt());
+        assertEquals("产品评审小组", named.path("data").path("sessionName").asText());
+        assertEquals(3, named.path("data").path("memberIds").size());
+    }
+
+    private void seedGroupFriend() {
+        seedUser(4004, "d@example.com", "D");
+        jdbc.update("INSERT INTO friend(user_id,friend_id,status) VALUES(1001,4004,0)");
     }
 
     private void seedUser(long id, String email, String name) {
