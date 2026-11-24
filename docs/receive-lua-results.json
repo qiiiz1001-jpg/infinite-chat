@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-01",
+  "runtime": "Lupa 2.6 / actual Lua source",
+  "redis": "in-memory command stub; not real Redis",
+  "tests": 17,
+  "failures": 0,
+  "scenarios": [
+    "first claim writes amount and time",
+    "last claim reports completed",
+    "repeat returns original receipt while pool remains",
+    "repeat after clock expiry retains receipt",
+    "repeat after grant expiry retains receipt and expired state",
+    "repeat completed packet without grant retains receipt",
+    "completed state wins over later clock expiry for repeat",
+    "completed state wins over later clock expiry for new claim",
+    "completed tombstone without grant is not not-found",
+    "expired tombstone without grant is not not-found",
+    "pending transaction never consumes pool",
+    "new claim cannot pass expiry boundary",
+    "single sender cannot claim own packet",
+    "single outsider cannot claim",
+    "group snapshot member can claim",
+    "group outsider is rejected",
+    "no cache traces returns not-found"
+  ]
+}

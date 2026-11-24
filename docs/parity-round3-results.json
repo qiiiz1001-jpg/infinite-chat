@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-31",
+  "scope": "Common/UserService/RedPacketService",
+  "totals": {
+    "tests": 33,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "module": "Common",
+      "name": "cn.qingliao.common.utils.JwtContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "UserService",
+      "name": "cn.qingliao.userservice.GroupRoleTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "UserService",
+      "name": "cn.qingliao.userservice.loadbalancer.ConsistentHashTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "UserService",
+      "name": "cn.qingliao.userservice.UserServiceSmokeTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "RedPacketService",
+      "name": "cn.qingliao.redpacketservice.FinancialTransactionTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "RedPacketService",
+      "name": "cn.qingliao.redpacketservice.RedPacketAlgorithmTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ]
+}

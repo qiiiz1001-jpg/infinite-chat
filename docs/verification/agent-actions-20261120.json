@@ -1,0 +1,164 @@
+{
+  "date": "2026-11-20",
+  "command": "./tools/verify.ps1 -Package",
+  "java": "17.0.9",
+  "javaFormattingFiles": 269,
+  "originalReferenceMappingsChecked": 589,
+  "build": "SUCCESS",
+  "totals": {
+    "tests": 91,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "name": "cn.qingliao.aiservice.AiContextTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.aiservice.AiMetricsContractTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.aiservice.ImActionToolTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.aiservice.KnowledgeFilesTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.common.utils.JwtContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.gateway.filter.AuthorizeFilterTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.gateway.GatewaySmokeTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.offlinedataservice.MessagePersistenceTest",
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.realtimeservice.websocket.MessageFlowTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.realtimeservice.websocket.NettySocketTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.realtimeservice.websocket.WebSocketAuthTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.redpacketservice.FinancialTransactionTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.redpacketservice.RedPacketAlgorithmTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.userservice.agent.AgentActionHttpTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.userservice.agent.AgentActionTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.userservice.GroupRoleTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.userservice.loadbalancer.ConsistentHashTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "cn.qingliao.userservice.UserServiceSmokeTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "browser": {
+    "passed": true,
+    "api": "mock",
+    "interaction": "DOM dispatchEvent; confirmation stubbed true",
+    "checks": [
+      "login payload and authenticated requests",
+      "draft creation",
+      "explicit confirmation",
+      "reminder cancellation",
+      "assistant response display",
+      "large integer IDs preserved",
+      "content treated as text",
+      "logout clears tasks and token"
+    ]
+  },
+  "boundaries": [
+    "Named regression suite selected by tools/verify.ps1, not all discoverable tests.",
+    "Real localhost HTTP, gateway and H2 migration SQL exercised; Kafka and Redis mocked in new Agent tests.",
+    "No actual new reminder MySQL migration, real scheduled Kafka/Redis delivery, or model tool selection integration performed.",
+    "SENT means both Kafka topics acknowledged publication, not end-to-end receipt or reading."
+  ],
+  "log": ".codex-work-agent-package-final.log"
+}

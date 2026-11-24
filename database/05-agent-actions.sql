@@ -1,0 +1,27 @@
+-- IM Agent 草稿、一次性提醒与消息投递记录；在业务数据库手工执行本迁移。
+CREATE TABLE IF NOT EXISTS agent_action (
+    action_id BIGINT PRIMARY KEY,
+    owner_id BIGINT NOT NULL,
+    session_id BIGINT NOT NULL,
+    request_key VARCHAR(100) NOT NULL,
+    kind VARCHAR(16) NOT NULL,
+    content TEXT NOT NULL,
+    execute_at BIGINT NULL,
+    status VARCHAR(16) NOT NULL,
+    version INT NOT NULL DEFAULT 0,
+    message_id BIGINT NOT NULL,
+    message_time BIGINT NULL,
+    store_sent BOOLEAN NOT NULL DEFAULT FALSE,
+    push_sent BOOLEAN NOT NULL DEFAULT FALSE,
+    attempts INT NOT NULL DEFAULT 0,
+    next_attempt_at BIGINT NOT NULL DEFAULT 0,
+    lease_until BIGINT NOT NULL DEFAULT 0,
+    lease_token VARCHAR(36) NOT NULL DEFAULT '',
+    last_error VARCHAR(1000) NOT NULL DEFAULT '',
+    created_at BIGINT NOT NULL,
+    updated_at BIGINT NOT NULL,
+    UNIQUE KEY uk_agent_action_request (owner_id, request_key),
+    UNIQUE KEY uk_agent_action_message (message_id),
+    KEY idx_agent_action_due (status, next_attempt_at),
+    KEY idx_agent_action_owner (owner_id, created_at)
+);

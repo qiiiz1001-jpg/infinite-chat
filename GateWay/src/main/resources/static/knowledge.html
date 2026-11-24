@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>轻聊个人与会话知识库</title>
+<style>
+body{font:16px/1.6 system-ui,sans-serif;max-width:1050px;margin:30px auto;padding:0 20px;background:#f5f7fa;color:#182537}section,article{background:white;padding:20px;border:1px solid #dce2ea;border-radius:12px;margin:16px 0}input,select,textarea,button{font:inherit;padding:9px;margin:5px 0;box-sizing:border-box;max-width:100%}button{cursor:pointer;background:#125ec9;color:white;border:0;border-radius:6px;margin-right:8px}button:disabled{opacity:.5}textarea{width:100%;min-height:85px}pre{white-space:pre-wrap;overflow-wrap:anywhere}small{color:#536476}.line{display:flex;gap:12px;flex-wrap:wrap;align-items:center}#notice{white-space:pre-wrap;color:#9c3300}a{color:#125ec9}#sources article{background:#f3f6fa}
+</style>
+<h1>个人与会话知识库</h1>
+<p><a href="/">聊天页面</a> · <a id="agentLink" href="/agent-console.html">结合当前资料拟消息或安排提醒</a></p>
+<section><h2>登录</h2><div class="line"><input id="email" type="email" placeholder="邮箱" autocomplete="username"><input id="password" type="password" placeholder="密码" autocomplete="current-password"><button id="login">登录</button><button id="logout">退出</button></div><small id="identity">未登录；凭证仅保存在页面内存中。</small></section>
+<p id="notice" role="status" aria-live="polite"></p>
+<section><h2>上传资料</h2><p>个人资料只供本人在助手会话使用；会话资料供该会话当前成员使用。请确认共享范围。</p>
+<div class="line"><label>存放范围 <select id="scope"><option value="PERSONAL">我的个人知识库</option><option value="SESSION">会话知识库</option></select></label><label>所属会话 <select id="uploadSession"></select></label></div>
+<input id="file" type="file" accept=".md,.txt,.pdf,.docx"><button id="upload">上传到所选范围</button><small>支持 UTF-8 TXT / Markdown、文字型 PDF、DOCX；每个文件最多10MB、提取文字20万字符。不支持扫描件OCR。上传后在后台建立索引。</small>
+</section>
+<section><h2>当前范围的资料</h2><button id="refresh">刷新列表</button><p>可查看原始提取文字和索引状态；仅上传者可删除或重试自己的文件。删除不撤回已发送的聊天消息。</p><div id="documents"></div><pre id="preview"></pre></section>
+<section><h2>按会话检索与问答</h2><label>使用会话 <select id="querySession"></select></label><p id="range"></p><textarea id="question" maxlength="4000" placeholder="例如：根据项目接口文档，登录需要哪些参数？"></textarea><button id="search">只检索资料</button><button id="ask">根据资料回答</button><pre id="answer" aria-live="polite"></pre><div id="sources"></div></section>
+<script>
+'use strict';
+let token='',userId='',sessions=[],poll=null,epoch=0;
+const $=id=>document.getElementById(id);
+const statuses={PENDING:'待索引',INDEXING:'索引中',READY:'可检索',FAILED:'索引失败'};
+function text(parent,tag,value){const e=document.createElement(tag);e.textContent=value;parent.append(e);return e;}
+function clearResults(){$('preview').textContent='';$('answer').textContent='';$('sources').replaceChildren();}
+function clearIdentity(){epoch++;token='';userId='';sessions=[];clearInterval(poll);$('identity').textContent='未登录';$('documents').replaceChildren();$('uploadSession').replaceChildren();$('querySession').replaceChildren();clearResults();}
+async function api(path,method='GET',body){const generation=epoch;const form=body instanceof FormData;const r=await fetch(path,{method,headers:{...(token?{'Access-Token':token}:{}),...(form?{}:{'Content-Type':'application/json'})},...(body===undefined?{}:{body:form?body:JSON.stringify(body)})});const raw=await r.text();if(generation!==epoch)throw Error('登录状态已变化，请重新操作');let data;try{data=JSON.parse(raw);}catch{throw Error('服务未返回有效结果，请检查服务和文件大小');}if(!r.ok||data.code!==200)throw Error(data.message||'操作失败');return data.data;}
+async function run(id,job){const button=$(id);button.disabled=true;$('notice').textContent='';try{await job();}catch(e){$('notice').textContent=e.message;}finally{button.disabled=false;}}
+function option(parent,s){const e=document.createElement('option');e.value=s.sessionId;e.textContent=(s.name||'会话')+' · '+s.sessionId;parent.append(e);}
+function setRange(){const s=sessions.find(s=>s.sessionId===$('querySession').value);$('range').textContent=s?.type===2?'检索范围：我的个人资料＋这个助手会话的资料。':'检索范围：仅所选会话的共享资料，不包含个人资料。';$('agentLink').href='/agent-console.html'+(s?'?sessionId='+encodeURIComponent(s.sessionId):'');clearResults();}
+function updateScope(){$('uploadSession').disabled=$('scope').value==='PERSONAL';clearResults();$('documents').replaceChildren();}
+function scopeQuery(){if(!token)throw Error('请先登录');const p=new URLSearchParams({scope:$('scope').value});if($('scope').value==='SESSION'){if(!$('uploadSession').value)throw Error('请选择所属会话');p.set('sessionId',$('uploadSession').value);}return p;}
+async function refresh(){const generation=epoch;const selection=scopeQuery().toString();const docs=await api('/api/ai/knowledge/documents?'+selection);if(generation!==epoch||selection!==scopeQuery().toString())return;$('documents').replaceChildren();for(const d of docs){const a=document.createElement('article');$('documents').append(a);text(a,'strong',d.filename);text(a,'p',(statuses[d.status]||d.status)+' · '+d.chunkCount+' 个片段 · 上传者 '+d.ownerId);if(d.lastError)text(a,'small',d.lastError);const button=(label,job)=>{const b=text(a,'button',label);b.onclick=async()=>{b.disabled=true;try{await job();}catch(e){$('notice').textContent=e.message;}finally{b.disabled=false;}};};button('查看提取文字',async()=>{$('preview').textContent=await api('/api/ai/knowledge/documents/'+d.documentId+'/text');});if(d.ownerId===userId){button('删除',async()=>{if(!confirm('删除 '+d.filename+'？资料将停止参与检索，已发送的消息不会撤回。'))return;await api('/api/ai/knowledge/documents/'+d.documentId,'DELETE');clearResults();await refresh();});if(d.status==='FAILED')button('重试索引',async()=>{await api('/api/ai/knowledge/documents/'+d.documentId+'/retry','POST',{});await refresh();});}}
+if(!docs.length)text($('documents'),'p','当前范围暂无资料。');}
+function showSources(sources){$('sources').replaceChildren();for(const s of sources){const card=document.createElement('article');$('sources').append(card);text(card,'strong',s.filename+' · 片段 '+s.chunkNo);text(card,'small','资料编号 '+s.documentId+' · '+(s.scope==='PERSONAL'?'个人':'会话'));text(card,'pre',s.excerpt);}}
+$('login').onclick=()=>run('login',async()=>{clearIdentity();const data=await api('/api/user/login/password','POST',{email:$('email').value,password:$('password').value});token=data.accessToken;userId=String(data.userId);$('password').value='';$('identity').textContent='已登录';sessions=await api('/api/user/agent/sessions');for(const s of sessions){option($('uploadSession'),s);option($('querySession'),s);}const bot=sessions.find(s=>s.type===2);if(bot)$('querySession').value=bot.sessionId;setRange();updateScope();await refresh();poll=setInterval(()=>{if(token)refresh().catch(e=>$('notice').textContent=e.message);},5000);});
+$('logout').onclick=()=>{clearIdentity();$('notice').textContent='已退出当前页面';};
+$('scope').onchange=()=>{updateScope();if(token)run('refresh',refresh);};$('uploadSession').onchange=()=>{clearResults();if(token)run('refresh',refresh);};$('querySession').onchange=setRange;$('refresh').onclick=()=>run('refresh',refresh);
+$('upload').onclick=()=>run('upload',async()=>{const p=scopeQuery(),file=$('file').files[0];if(!file)throw Error('请选择文件');if(file.size>10*1024*1024)throw Error('文件最多10MB');if(p.get('scope')==='SESSION'&&!confirm('将共享给所选会话的当前成员，确认上传？'))return;const form=new FormData();form.append('file',file);const result=await api('/api/ai/knowledge/documents?'+p,'POST',form);$('notice').textContent='资料已提交，当前状态：'+(statuses[result.status]||result.status);$('file').value='';await refresh();});
+async function query(mode){if(!token||!$('querySession').value)throw Error('请登录并选择问答会话');clearResults();const generation=epoch,session=$('querySession').value;const result=await api('/api/ai/knowledge/'+mode,'POST',{sessionId:session,question:$('question').value});if(generation!==epoch||session!==$('querySession').value)return;if(mode==='ask'){$('answer').textContent=result.answer;showSources(result.sources);}else{showSources(result);if(!result.length)$('answer').textContent='当前可见资料中没有找到匹配内容。';}}
+$('search').onclick=()=>run('search',()=>query('search'));$('ask').onclick=()=>run('ask',()=>query('ask'));updateScope();
+</script>
+</html>

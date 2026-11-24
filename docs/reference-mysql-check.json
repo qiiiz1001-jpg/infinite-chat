@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-28",
+  "engine": "8.0.43",
+  "isolated": true,
+  "existing_database_modified": false,
+  "checks": [
+    "fresh schema and complete initialization can run twice",
+    "demo data is not duplicated",
+    "original chapter 7 single and group fixtures restored",
+    "new session default avatar is present",
+    "new packet persists session_type",
+    "upgrade derives existing packet type from session",
+    "upgrade supplies missing session avatar",
+    "repeat upgrade preserves explicit avatar",
+    "repeat upgrade preserves explicit packet type",
+    "upgrade does not reset balances or amounts",
+    "unique receipt index installed",
+    "official Nacos MySQL schema initializes idempotently"
+  ]
+}

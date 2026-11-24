@@ -1,0 +1,15 @@
+package cn.qingliao.common.model.dto;
+
+import lombok.Data;
+
+@Data
+public class MessageBody {
+
+    private String content;
+
+    private Long replyId;
+
+    private String redPacketId;
+
+    private String redPacketWrapperText;
+}

@@ -1,0 +1,100 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+  application:
+    name: AiService
+  mail:
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        enabled: ${NACOS_ENABLED:false}
+        metadata:
+          ws-port: ${NETTY_PORT:9101}
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 2000
+            readTimeout: 10000
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 2
+      timeout: 5s
+      ttl: 86400
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3307}/${DB_NAME:Qingliao}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useAffectedRows=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
+server:
+  port: 8105
+  servlet: {}
+logging:
+  level:
+    dev.langchain4j.mcp: WARN
+langchain4j:
+  community:
+    dashscope:
+      chat-model:
+        model-name: ${QWEN_MODEL:qwen-max}
+        api-key: ${DASHSCOPE_API_KEY:}
+      streaming-chat-model:
+        model-name: ${QWEN_MODEL:qwen-max}
+        api-key: ${DASHSCOPE_API_KEY:}
+      embedding-model:
+        model-name: ${EMBEDDING_MODEL:text-embedding-v4}
+        api-key: ${DASHSCOPE_API_KEY:}
+bigmodel:
+  api-key: ${BIGMODEL_API_KEY:}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: never
+chat:
+  internal-token: ${INTERNAL_TOKEN:local-internal-change-me}
+services:
+  userservice:
+    url: ${USER_SERVICE_URL:http://localhost:8104}
+  aiservice:
+    url: ${AI_SERVICE_URL:http://localhost:8105}
+  offlinedataservice:
+    url: ${OFFLINE_SERVICE_URL:http://localhost:8101}
+mcp:
+  enabled: ${MCP_ENABLED:false}
+pgvector:
+  host: ${PGVECTOR_HOST:localhost}
+  port: ${PGVECTOR_PORT:5432}
+  database: ${PGVECTOR_DATABASE:chat_vectors}
+  user: ${PGVECTOR_USER:chat}
+  password: ${PGVECTOR_PASSWORD:}
+  table: chat_embeddings
+rag:
+  docs-path: ${RAG_DOCS_PATH:AiService/src/main/resources/docs}
+  load-on-startup: ${RAG_LOAD_ON_STARTUP:false}
+  maintainer-ids: ${RAG_MAINTAINER_IDS:}
+  recall-top-n: 20
+  rerank-top-k: 5
+  rerank-min-score: 0.2
+snowflake:
+  worker-id: ${SNOWFLAKE_WORKER_ID:-1}
+  datacenter-id: ${SNOWFLAKE_DATACENTER_ID:1}

@@ -1,0 +1,161 @@
+# Apply after compose.yml (or compose-server.yml) AND compose-discovery.yml.
+# Explicit replica identities; do not --scale these fixed-worker services.
+services:
+  userservice-2:
+    build:
+      context: ..
+      dockerfile: UserService/Dockerfile
+    profiles:
+    - apps
+    environment:
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-Qingliao}
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN}
+      JWT_SECRET_BASE64: ${JWT_SECRET_BASE64}
+      NACOS_ENABLED: 'true'
+      NACOS_SERVER_ADDR: nacos:8848
+      USER_SERVICE_URL: ''
+      AI_SERVICE_URL: ''
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://localhost:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      NETTY_URI: ws://${NETTY_ADVERTISED_HOST:-localhost}:9101/ws/netty
+      NETTY_ADVERTISED_HOST: ${NETTY_ADVERTISED_HOST:-localhost}
+      MAIL_HOST: ${MAIL_HOST:-smtp.qq.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Shanghai -XX:MaxRAMPercentage=70.0
+      USER_SERVICE_URI: http://userservice:8104
+      OFFLINE_SERVICE_URI: http://offlinedataservice:8101
+      AI_SERVICE_URI: http://aiservice:8105
+      REDPACKET_SERVICE_URI: http://redpacketservice:8103
+      CHAT_NODE_ID: userservice-2
+      SNOWFLAKE_WORKER_ID: '7'
+      MINIO_INITIALIZE: 'false'
+      MINIO_INTERNAL_ENDPOINT: http://minio:9000
+      OFFLINE_SERVICE_URL: ''
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+  offlinedataservice-2:
+    build:
+      context: ..
+      dockerfile: OfflineDataService/Dockerfile
+    profiles:
+    - apps
+    environment:
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-Qingliao}
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN}
+      JWT_SECRET_BASE64: ${JWT_SECRET_BASE64}
+      NACOS_ENABLED: 'true'
+      NACOS_SERVER_ADDR: nacos:8848
+      USER_SERVICE_URL: ''
+      AI_SERVICE_URL: ''
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://localhost:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      NETTY_URI: ws://${NETTY_ADVERTISED_HOST:-localhost}:9101/ws/netty
+      NETTY_ADVERTISED_HOST: ${NETTY_ADVERTISED_HOST:-localhost}
+      MAIL_HOST: ${MAIL_HOST:-smtp.qq.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Shanghai -XX:MaxRAMPercentage=70.0
+      USER_SERVICE_URI: http://userservice:8104
+      OFFLINE_SERVICE_URI: http://offlinedataservice:8101
+      AI_SERVICE_URI: http://aiservice:8105
+      REDPACKET_SERVICE_URI: http://redpacketservice:8103
+      CHAT_NODE_ID: offlinedataservice-2
+      SNOWFLAKE_WORKER_ID: '9'
+      CANAL_ENABLED: ${CANAL_ENABLED:-false}
+      CANAL_HOST: canal
+      CANAL_USERNAME: ''
+      CANAL_PASSWORD: ''
+      OFFLINE_SERVICE_URL: ''
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+  realtimeservice-2:
+    build:
+      context: ..
+      dockerfile: RealTimeService/Dockerfile
+    profiles:
+    - apps
+    environment:
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-Qingliao}
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN}
+      JWT_SECRET_BASE64: ${JWT_SECRET_BASE64}
+      NACOS_ENABLED: 'true'
+      NACOS_SERVER_ADDR: nacos:8848
+      USER_SERVICE_URL: ''
+      AI_SERVICE_URL: ''
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://localhost:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      NETTY_URI: ws://${NETTY_ADVERTISED_HOST:-localhost}:9101/ws/netty
+      NETTY_ADVERTISED_HOST: ${NETTY_ADVERTISED_HOST:-localhost}
+      MAIL_HOST: ${MAIL_HOST:-smtp.qq.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      TZ: Asia/Shanghai
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Shanghai -XX:MaxRAMPercentage=70.0
+      USER_SERVICE_URI: http://userservice:8104
+      OFFLINE_SERVICE_URI: http://offlinedataservice:8101
+      AI_SERVICE_URI: http://aiservice:8105
+      REDPACKET_SERVICE_URI: http://redpacketservice:8103
+      CHAT_NODE_ID: realtimeservice-2
+      SNOWFLAKE_WORKER_ID: '8'
+      OFFLINE_SERVICE_URL: ''
+      NETTY_PORT: '9102'
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+    - ${CHAT_BIND_IP:-127.0.0.1}:9102:9102

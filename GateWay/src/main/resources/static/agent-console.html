@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>轻聊会话与提醒助手</title>
+<style>
+body{font:16px/1.6 system-ui,sans-serif;max-width:1050px;margin:32px auto;padding:0 20px;background:#f5f7fa;color:#182537}section,article{background:white;padding:20px;border:1px solid #dce2ea;border-radius:12px;margin:16px 0}input,select,textarea,button{font:inherit;padding:9px;margin:5px 0;box-sizing:border-box}input,select,textarea{border:1px solid #aab8c8;border-radius:6px;max-width:100%}textarea{width:100%;min-height:90px}button{cursor:pointer;background:#125ec9;color:white;border:0;border-radius:6px;margin-right:8px}button:disabled{opacity:.5;cursor:wait}button.secondary{background:#e8edf5;color:#182537}pre{white-space:pre-wrap;overflow-wrap:anywhere}#notice{white-space:pre-wrap;color:#9c3300}label{display:block}small{color:#536476}.line{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.tag{font-weight:bold;color:#125ec9}#chatlog{max-height:380px;overflow:auto}#chatlog p{white-space:pre-wrap;border-bottom:1px solid #eee;padding-bottom:12px}
+</style>
+<h1>轻聊会话与提醒助手</h1>
+<p><a href="/knowledge.html">管理个人与会话资料</a> · <a href="/">聊天页面</a></p>
+<p>请先登录，选择问答会话后描述要求。助手只使用该范围的资料；个人提醒请选择本人的助手会话。所有发送和提醒草稿都需在下方核对并确认。</p>
+<section><h2>账号</h2><div class="line"><input id="account" type="email" placeholder="邮箱" autocomplete="username"><input id="password" type="password" placeholder="密码" autocomplete="current-password"><button id="login">登录</button><button id="logout" class="secondary">退出</button></div><small id="identity">未登录；凭证仅保存在当前页面内存中。</small></section>
+<p id="notice" role="status" aria-live="polite"></p>
+<section><h2>告诉助手</h2><div class="line"><button id="load">加载会话与任务</button><label>问答会话 <select id="chatSession"><option value="">请先登录并加载</option></select></label></div><div id="chatlog" aria-live="polite"></div><textarea id="prompt" placeholder="例如：明天下午三点提醒我提交简历；或根据当前项目群的资料拟一条通知。"></textarea><button id="send">发送给助手</button></section>
+<section><h2>也可以手工拟稿</h2><small>时间按当前浏览器时区填写，预览统一显示北京时间。留空表示确认后尽快执行；个人提醒必须指定时间。</small><div class="line"><label>类型 <select id="kind"><option value="MESSAGE">发会话消息</option><option value="REMINDER">个人提醒</option></select></label><label>目标 <select id="target"></select></label><label>时间 <input id="time" type="datetime-local"></label></div><textarea id="content" maxlength="4000" placeholder="消息或提醒正文"></textarea><button id="draft">生成草稿</button></section>
+<section><h2>我的任务</h2><p>修改后需要重新确认。取消不撤回已发消息。投递确认不表示接收者已读。</p><button id="refresh" class="secondary">刷新</button><div id="actions"></div></section>
+<script>
+'use strict';
+let token='', sessionOptions=[], poll=null, epoch=0;
+const $=id=>document.getElementById(id), tasks=new Map();
+const labels={DRAFT:'待确认',PENDING:'等待执行',RUNNING:'正在投递',SENT:'投递已确认',FAILED:'失败／可能部分投递',CANCELLED:'已取消'};
+const date=ms=>ms?new Date(Number(ms)).toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',hour12:false})+' 北京时间':'确认后尽快执行';
+function notice(message){$('notice').textContent=message;}
+async function api(path,method='GET',body){
+ const generation=epoch;
+ const r=await fetch(path,{method,headers:{'Content-Type':'application/json',...(token?{'Access-Token':token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
+ const text=await r.text();if(generation!==epoch)throw Error('登录状态已变化，请重新操作');let value;try{value=JSON.parse(text);}catch{throw Error(text||'服务没有返回结果');}
+ if(!r.ok||value.code!==200)throw Error(value.message||'请求失败，请检查登录状态');return value.data;
+}
+async function run(button,action){button.disabled=true;notice('');try{await action();}catch(e){notice(e.message);}finally{button.disabled=false;}}
+function option(parent,value,text){const e=document.createElement('option');e.value=value;e.textContent=text;parent.append(e);}
+async function load(){
+ sessionOptions=await api('/api/user/agent/sessions');const current=$('chatSession').value;
+ $('chatSession').replaceChildren();for(const s of sessionOptions)option($('chatSession'),s.sessionId,s.name||s.sessionId);
+ const preferred=current||new URLSearchParams(location.search).get('sessionId')||sessionOptions.find(s=>s.type===2)?.sessionId;
+ if(sessionOptions.some(s=>s.sessionId===preferred))$('chatSession').value=preferred;targets();await refresh();
+}
+function targets(){const kind=$('kind').value;$('target').replaceChildren();for(const s of sessionOptions.filter(s=>kind==='REMINDER'?s.type===2:s.type!==2))option($('target'),s.sessionId,(s.name||'会话')+' · '+s.sessionId);}
+function text(parent,tag,value){const e=document.createElement(tag);e.textContent=value;parent.append(e);return e;}
+function actionButton(parent,title,callback){const b=text(parent,'button',title);b.onclick=()=>run(b,callback);}
+async function refresh(){
+ const list=await api('/api/user/agent/actions');$('actions').replaceChildren();tasks.clear();
+ for(const a of list){tasks.set(a.actionId,a);const card=document.createElement('article');$('actions').append(card);
+ text(card,'div',(labels[a.status]||a.status)+' · '+(a.kind==='REMINDER'?'个人提醒':'会话消息'));
+ const target=sessionOptions.find(s=>s.sessionId===a.sessionId);text(card,'small','任务 '+a.actionId+' · 目标 '+(target?.name||a.sessionId)+' · 版本 '+a.version);
+ text(card,'p',date(a.executeAt));text(card,'pre',a.content);
+ if(a.lastError)text(card,'p',a.lastError);if(a.storeSent||a.pushSent)text(card,'small','存储队列确认：'+a.storeSent+'；推送队列确认：'+a.pushSent+'；消息编号：'+a.messageId);
+ if(a.status==='DRAFT')actionButton(card,'核对并确认',async()=>{if(!confirm('确认目标、正文与时间无误？\n'+(target?.name||a.sessionId)+'\n'+date(a.executeAt)+'\n'+a.content))return;await api('/api/user/agent/actions/'+a.actionId+'/confirm','POST',{version:a.version});await refresh();});
+ if(['DRAFT','PENDING'].includes(a.status)&&a.messageTime==null){
+  actionButton(card,'取消任务',async()=>{await api('/api/user/agent/actions/'+a.actionId+'/cancel','POST',{version:a.version});await refresh();});
+  actionButton(card,'修改并重新拟稿',async()=>{const body=prompt('修改正文',a.content);if(body===null)return;const input=prompt('输入带时区的完整时间，例如2026-11-21T15:00:00+08:00；立即消息可留空',a.executeAt?new Date(Number(a.executeAt)).toISOString():'');if(input===null)return;const at=input?Date.parse(input):null;if(input&&(!/[zZ]|[+-]\d\d:\d\d$/.test(input)||!Number.isFinite(at)))throw Error('请填写有效的带时区日期时间');await api('/api/user/agent/actions/'+a.actionId,'PATCH',{version:a.version,content:body,executeAt:at});await refresh();});
+ }
+ if(a.status==='FAILED')actionButton(card,'核对后重试未确认的投递',async()=>{if(!confirm('任务可能已经部分投递。将复用原消息编号重试，是否继续？'))return;await api('/api/user/agent/actions/'+a.actionId+'/retry','POST',{version:a.version});await refresh();});
+ }
+ if(!list.length)text($('actions'),'p','暂无任务。');
+}
+function clearIdentity(){epoch++;token='';clearInterval(poll);tasks.clear();$('identity').textContent='未登录';$('actions').replaceChildren();$('chatlog').replaceChildren();sessionOptions=[];$('target').replaceChildren();$('chatSession').replaceChildren();}
+$('login').onclick=()=>run($('login'),async()=>{clearIdentity();const data=await api('/api/user/login/password','POST',{email:$('account').value,password:$('password').value});token=data.accessToken;$('password').value='';$('identity').textContent='已登录';await load();poll=setInterval(()=>{if(token)refresh().catch(e=>notice(e.message));},5000);});
+$('logout').onclick=()=>{clearIdentity();$('identity').textContent='已退出当前页面';};
+$('kind').onchange=targets;$('load').onclick=()=>run($('load'),load);$('refresh').onclick=()=>run($('refresh'),refresh);
+$('chatSession').onchange=()=>{$('chatlog').replaceChildren();};
+$('draft').onclick=()=>run($('draft'),async()=>{const input=$('time').value;const draft={requestKey:crypto.randomUUID(),kind:$('kind').value,sessionId:$('target').value,content:$('content').value,executeAt:input?Date.parse(input):null};await api('/api/user/agent/actions','POST',draft);notice('草稿已生成，请核对后确认。');await refresh();});
+$('send').onclick=()=>run($('send'),async()=>{
+ if(!token||!$('chatSession').value)throw Error('请登录并选择问答会话');const promptText=$('prompt').value.trim();if(!promptText)return;text($('chatlog'),'p','我：'+promptText);$('prompt').value='';
+ const generation=epoch,session=$('chatSession').value;
+ const r=await fetch('/api/ai/chat',{method:'POST',headers:{'Content-Type':'application/json','Access-Token':token},body:JSON.stringify({sessionId:session,prompt:promptText})});const answer=await r.text();if(generation!==epoch||session!==$('chatSession').value)return;let error;try{const obj=JSON.parse(answer);if(obj.code&&obj.code!==200)error=obj.message;}catch{}if(!r.ok||error)throw Error(error||'助手调用失败');text($('chatlog'),'p','助手：'+answer);await refresh();
+});
+</script>
+</html>

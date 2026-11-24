@@ -1,0 +1,39 @@
+# 在本机或服务器 Compose 后叠加，使用原文按服务名发现和负载均衡的方式。
+services:
+  userservice:
+    environment:
+      NACOS_ENABLED: 'true'
+      USER_SERVICE_URL: ''
+      AI_SERVICE_URL: ''
+      OFFLINE_SERVICE_URL: ''
+  realtimeservice:
+    environment:
+      NACOS_ENABLED: 'true'
+      USER_SERVICE_URL: ''
+      AI_SERVICE_URL: ''
+      OFFLINE_SERVICE_URL: ''
+  offlinedataservice:
+    environment:
+      NACOS_ENABLED: 'true'
+      USER_SERVICE_URL: ''
+      AI_SERVICE_URL: ''
+      OFFLINE_SERVICE_URL: ''
+  redpacketservice:
+    environment:
+      NACOS_ENABLED: 'true'
+      USER_SERVICE_URL: ''
+      AI_SERVICE_URL: ''
+      OFFLINE_SERVICE_URL: ''
+  aiservice:
+    environment:
+      NACOS_ENABLED: 'true'
+      USER_SERVICE_URL: ''
+      AI_SERVICE_URL: ''
+      OFFLINE_SERVICE_URL: ''
+  gateway:
+    environment:
+      NACOS_ENABLED: 'true'
+      USER_SERVICE_URI: lb://UserService
+      OFFLINE_SERVICE_URI: lb://OfflineDataService
+      AI_SERVICE_URI: lb://AiService
+      REDPACKET_SERVICE_URI: lb://RedPacketService

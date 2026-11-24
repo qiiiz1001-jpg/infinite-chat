@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-28",
+  "runtime": "JDK 17",
+  "totals": {
+    "tests": 54,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "module": "AiService",
+      "class": "cn.qingliao.aiservice.AiContextTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "AiService",
+      "class": "cn.qingliao.aiservice.AiMetricsContractTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "AiService",
+      "class": "cn.qingliao.aiservice.KnowledgeFilesTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "Common",
+      "class": "cn.qingliao.common.utils.JwtContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "GateWay",
+      "class": "cn.qingliao.gateway.filter.AuthorizeFilterTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "GateWay",
+      "class": "cn.qingliao.gateway.GatewaySmokeTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "OfflineDataService",
+      "class": "cn.qingliao.offlinedataservice.MessagePersistenceTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "RealTimeService",
+      "class": "cn.qingliao.realtimeservice.websocket.MessageFlowTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "RealTimeService",
+      "class": "cn.qingliao.realtimeservice.websocket.NettySocketTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "RealTimeService",
+      "class": "cn.qingliao.realtimeservice.websocket.WebSocketAuthTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "RedPacketService",
+      "class": "cn.qingliao.redpacketservice.FinancialTransactionTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "RedPacketService",
+      "class": "cn.qingliao.redpacketservice.RedPacketAlgorithmTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "UserService",
+      "class": "cn.qingliao.userservice.GroupRoleTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "UserService",
+      "class": "cn.qingliao.userservice.loadbalancer.ConsistentHashTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "UserService",
+      "class": "cn.qingliao.userservice.UserServiceSmokeTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ]
+}

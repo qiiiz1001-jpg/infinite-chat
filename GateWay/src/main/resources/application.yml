@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: GateWay
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 2
+      timeout: 5s
+      ttl: 86400
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
+        enabled: ${NACOS_ENABLED:false}
+        metadata:
+          ws-port: ${NETTY_PORT:9101}
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user
+              uri: ${USER_SERVICE_URI:http://localhost:8104}
+              predicates:
+                - Path=/api/user/**,/api/contact/**,/api/group/**
+            - id: offline
+              uri: ${OFFLINE_SERVICE_URI:http://localhost:8101}
+              predicates:
+                - Path=/api/message/**
+            - id: ai
+              uri: ${AI_SERVICE_URI:http://localhost:8105}
+              predicates:
+                - Path=/api/ai/**
+            - id: redpacket
+              uri: ${REDPACKET_SERVICE_URI:http://localhost:8103}
+              predicates:
+                - Path=/api/chat/redPacket/**
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - http://localhost:5173
+                  - http://localhost:10010
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - PATCH
+                  - OPTIONS
+                allowedHeaders:
+                  - '*'
+                allowCredentials: true
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 2000
+            readTimeout: 10000
+  main:
+    web-application-type: reactive
+server:
+  port: 10010
+chat:
+  internal-token: ${INTERNAL_TOKEN:local-internal-change-me}
+services:
+  userservice:
+    url: ${USER_SERVICE_URL:http://localhost:8104}
+  aiservice:
+    url: ${AI_SERVICE_URL:http://localhost:8105}
+  offlinedataservice:
+    url: ${OFFLINE_SERVICE_URL:http://localhost:8101}

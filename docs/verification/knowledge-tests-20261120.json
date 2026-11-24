@@ -1,0 +1,217 @@
+{
+  "date": "2026-11-20",
+  "java": "17.0.9",
+  "javaFormattingFiles": 281,
+  "referenceMappingsChecked": 589,
+  "standard": {
+    "command": "./tools/verify.ps1 -Package",
+    "build": "SUCCESS",
+    "totals": {
+      "tests": 103,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "suites": [
+      {
+        "name": "cn.qingliao.aiservice.AiContextTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.aiservice.AiMetricsContractTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.aiservice.ImActionToolTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.aiservice.KnowledgeFilesTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.aiservice.KnowledgeParserTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.aiservice.ScopedKnowledgeTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.common.utils.JwtContractTest",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.gateway.filter.AuthorizeFilterTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.gateway.GatewaySmokeTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.offlinedataservice.MessagePersistenceTest",
+        "tests": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.realtimeservice.websocket.MessageFlowTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.realtimeservice.websocket.NettySocketTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.realtimeservice.websocket.WebSocketAuthTest",
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.redpacketservice.FinancialTransactionTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.redpacketservice.RedPacketAlgorithmTest",
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.userservice.agent.AgentActionHttpTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.userservice.agent.AgentActionTest",
+        "tests": 10,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.userservice.GroupRoleTest",
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.userservice.loadbalancer.ConsistentHashTest",
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "name": "cn.qingliao.userservice.UserServiceSmokeTest",
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "log": ".codex-work-knowledge-package.log"
+  },
+  "postgres": {
+    "name": "cn.qingliao.aiservice.ScopedKnowledgePgTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "schema": "random isolated kb_test_* schema, cleaned",
+    "real": [
+      "PostgreSQL",
+      "pgvector",
+      "pg_search BM25 index and scored JOIN",
+      "HTTP multipart",
+      "document and chunk transactions"
+    ],
+    "substitutes": [
+      "ChatModel",
+      "EmbeddingModel",
+      "ScoringModel",
+      "Redis authentication values",
+      "UserService permission RPC"
+    ]
+  },
+  "postgresLog": ".codex-work-knowledge-postgres-final.log",
+  "finalGateway": {
+    "tests": 9,
+    "failures": 0,
+    "repeatedSubset": true,
+    "log": ".codex-work-knowledge-gateway-final.log"
+  },
+  "browser": {
+    "passed": true,
+    "api": "mock",
+    "interactions": "DOM dispatch events and stubbed confirmation dialog",
+    "checks": [
+      "personal upload has no session ID",
+      "shared upload binds selected session",
+      "UTF-8 multipart body",
+      "large integer IDs",
+      "plain text preview and sources",
+      "scope switching clears results",
+      "retry and delete",
+      "logout clears identity",
+      "Agent accepts selected team session and clears previous local log",
+      "stale in-flight Agent response discarded after logout"
+    ]
+  },
+  "artifacts": "All six target-maven executable JARs checked; gateway contains current index, knowledge and agent pages.",
+  "boundaries": [
+    "No actual application schema migration or running service restart performed.",
+    "No real model, embedding, reranking API, SMTP or MCP invoked.",
+    "The standard named regression suite is not all discoverable tests.",
+    "Sources list retrieved material; answer quality and citation accuracy require real-model evaluation.",
+    "Deletion blocks new retrieval and switches memory namespace, but does not recall previously emitted messages."
+  ],
+  "offlineEvaluationHelpers": {
+    "tests": 4,
+    "failures": 0
+  }
+}
